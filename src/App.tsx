@@ -10,6 +10,7 @@ import { Notificaciones } from './pages/Notificaciones';
 import { Bloqueos } from './pages/Bloqueos';
 import ClientInfoTable from './pages/ClientInfoTable';
 import { Users } from './pages/Users';
+import Configuracion from './pages/Configuracion';
 import { useStore, generateMockData } from './store/store';
 
 function App() {
@@ -56,6 +57,10 @@ function App() {
             <Route
               path='users'
               element={<Users />}
+            />
+            <Route
+              path='configurar'
+              element={<Configuracion />}
             />
           </Route>
         </Routes>

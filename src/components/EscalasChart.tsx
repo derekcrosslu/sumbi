@@ -1,7 +1,7 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
-type ChartProps = {
+type EscalasChartProps = {
   title: string;
   data: Array<{
     name: string;
@@ -10,7 +10,7 @@ type ChartProps = {
   ratio: string;
 };
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
@@ -20,11 +20,10 @@ const CustomTooltip = ({ active, payload }: any) => {
       </div>
     );
   }
-
   return null;
 };
 
-export default function Chart({ title, data, ratio }: ChartProps) {
+export default function EscalasChart({ title, data, ratio }: EscalasChartProps) {
   return (
     <div className={`bg-white p-4 rounded-lg shadow ${ratio}`}>
       <h3 className='text-lg font-semibold mb-4'>{title}</h3>
@@ -39,14 +38,15 @@ export default function Chart({ title, data, ratio }: ChartProps) {
               outerRadius={80}
               fill="#8884d8"
               dataKey="value"
-              label={({ name, value }) => `${name}: S/. ${value.toLocaleString()}`}
             >
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
             <Tooltip content={<CustomTooltip />} />
-            <Legend formatter={(value) => <span style={{ color: '#333' }}>{value}</span>} />
+            <Legend
+              formatter={(value) => value.replace('Escala ', '')}
+            />
           </PieChart>
         </ResponsiveContainer>
       </div>

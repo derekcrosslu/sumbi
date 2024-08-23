@@ -3,15 +3,17 @@ import { useStore } from '../store/store';
 
 import Card from '../components/Card';
 import Chart from '../components/Chart';
+import EscalasChart from '../components/EscalasChart';
 import Table from '../components/Table';
 
 export const Dashboard: React.FC = () => {
-  const { familias, pagos } = useStore();
+  const { familias, pagos, facturas, getEscalasByFamiliaId } = useStore();
 
-  const totalRevenue = pagos.reduce((sum, pago) => sum + pago.monto, 0);
-  const outstandingPayments = familias.reduce(
-    (sum, familia) => sum + familia.deuda_total,
-    0
+  const totalRevenue = Math.round(
+    pagos.reduce((sum, pago) => sum + pago.monto, 0)
+  );
+  const outstandingPayments = Math.round(
+    familias.reduce((sum, familia) => sum + familia.deuda_total, 0)
   );
 
   const cards = [
@@ -37,6 +39,65 @@ export const Dashboard: React.FC = () => {
     },
   ];
 
+  // Calculate sums for each payment status and round the values
+  const sumPagosCompletados = Math.round(
+    pagos
+      .filter((pago) => pago.estado === 'Completado')
+      .reduce((sum, pago) => sum + pago.monto, 0)
+  );
+  const sumPagosPendientes = Math.round(
+    pagos
+      .filter((pago) => pago.estado === 'Pendiente')
+      .reduce((sum, pago) => sum + pago.monto, 0)
+  );
+  const sumErrorPagos = Math.round(
+    pagos
+      .filter((pago) => pago.estado === 'Error')
+      .reduce((sum, pago) => sum + pago.monto, 0)
+  );
+
+  const sumEscalaA = Math.round(
+    facturas
+      .filter((factura) => getEscalasByFamiliaId(factura.familia_id) === 'A')
+      .reduce((sum, factura) => sum + factura.monto, 0)
+  );
+  const sumEscalaB = Math.round(
+    facturas
+      .filter((factura) => getEscalasByFamiliaId(factura.familia_id) === 'B')
+      .reduce((sum, factura) => sum + factura.monto, 0)
+  );
+  const sumEscalaC = Math.round(
+    facturas
+      .filter((factura) => getEscalasByFamiliaId(factura.familia_id) === 'C')
+      .reduce((sum, factura) => sum + factura.monto, 0)
+  );
+
+  const sumEscalaD = Math.round(
+    facturas
+      .filter((factura) => getEscalasByFamiliaId(factura.familia_id) === 'D')
+      .reduce((sum, factura) => sum + factura.monto, 0)
+  );
+
+  const sumEscalaE = Math.round(
+    facturas
+      .filter((factura) => getEscalasByFamiliaId(factura.familia_id) === 'E')
+      .reduce((sum, factura) => sum + factura.monto, 0)
+  );
+
+  const chartDataEscalas = [
+    { name: 'Escala A', value: sumEscalaA },
+    { name: 'Escala B', value: sumEscalaB },
+    { name: 'Escala C', value: sumEscalaC },
+    { name: 'Escala D', value: sumEscalaD },
+    { name: 'Escala E', value: sumEscalaE },
+  ];
+
+  const chartData = [
+    { name: 'Completados', value: sumPagosCompletados },
+    { name: 'Pendientes', value: sumPagosPendientes },
+    { name: 'Error', value: sumErrorPagos },
+  ];
+
   return (
     <div className='flex flex-col w-full h-screen'>
       <div className='grid  md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4'>
@@ -51,15 +112,13 @@ export const Dashboard: React.FC = () => {
       </div>
       <div className='grid grid-cols-3 mb-8 gap-4'>
         <Chart
-          title={'Pagos'}
-          amount={10000}
-          data={[]}
+          title={'Estado de Pagos'}
+          data={chartData}
           ratio={'col-span-2'}
         />
-        <Chart
+        <EscalasChart
           title={'Escalas'}
-          amount={10000}
-          data={[]}
+          data={chartDataEscalas}
           ratio={'col-span-1'}
         />
       </div>

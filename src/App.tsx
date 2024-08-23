@@ -9,6 +9,7 @@ import { Pagos } from './pages/Pagos';
 import { Notificaciones } from './pages/Notificaciones';
 import { Bloqueos } from './pages/Bloqueos';
 import ClientInfoTable from './pages/ClientInfoTable';
+import { Users } from './pages/Users';
 import { useStore, generateMockData } from './store/store';
 
 function App() {
@@ -51,6 +52,10 @@ function App() {
             <Route
               path='reportes'
               element={<ClientInfoTable />}
+            />
+            <Route
+              path='users'
+              element={<Users />}
             />
           </Route>
         </Routes>

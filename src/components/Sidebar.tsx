@@ -47,7 +47,7 @@ export const Sidebar: React.FC = () => {
       url: '/notificaciones',
     },
     { icon: <Ban size={20} />, label: 'Bloqueos', url: '/bloqueos' },
-    { icon: <User size={20} />, label: 'Usuarios', url: '/usuarios' },
+    { icon: <User size={20} />, label: 'Usuarios', url: '/users' },
     { icon: <FileText size={20} />, label: 'Reportes', url: '/reportes' },
     { icon: <Settings size={20} />, label: 'Configurar', url: '/configurar' },
   ];

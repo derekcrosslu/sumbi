@@ -3,7 +3,7 @@ import { useStore } from '../store/store';
 
 import Card from '../components/Card';
 import Chart from '../components/Chart';
-// import Table from '../components/Table';
+import Table from '../components/Table';
 
 export const Dashboard: React.FC = () => {
   const { familias, pagos } = useStore();
@@ -63,7 +63,9 @@ export const Dashboard: React.FC = () => {
           ratio={'col-span-1'}
         />
       </div>
-      <div>{/* <Table /> */}</div>
+      <div>
+        <Table />
+      </div>
     </div>
   );
 };

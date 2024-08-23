@@ -1,11 +1,39 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { MoreVertical } from 'lucide-react';
 import { useStore } from '../store/store';
+import Pagination, { PaginationSmall } from '../components/Pagination';
 
-type Props = {};
+const ITEMS_PER_PAGE = 3;
 
-const Table = (props: Props) => {
-  const { familias, pagos } = useStore();
+const Table = () => {
+  const { familias, pagos, notificaciones } = useStore();
+  const [currentPagosPage, setCurrentPagosPage] = useState(1);
+  const [currentNotificacionesPage, setCurrentNotificacionesPage] = useState(1);
+
+  const formatDate = (date: Date | string | null | undefined): string => {
+    if (!date) return '';
+    const dateObject = date instanceof Date ? date : new Date(date);
+    if (isNaN(dateObject.getTime())) {
+      return '';
+    }
+    return dateObject.toDateString();
+  };
+
+  const totalPagosPages = Math.ceil(pagos.length / ITEMS_PER_PAGE);
+  const totalNotificacionesPages = Math.ceil(
+    notificaciones.length / ITEMS_PER_PAGE
+  );
+
+  const currentPagos = useMemo(() => {
+    const startIndex = (currentPagosPage - 1) * ITEMS_PER_PAGE;
+    return pagos.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [pagos, currentPagosPage]);
+
+  const currentNotificaciones = useMemo(() => {
+    const startIndex = (currentNotificacionesPage - 1) * ITEMS_PER_PAGE;
+    return notificaciones.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [notificaciones, currentNotificacionesPage]);
+
   return (
     <div>
       <div className='grid grid-cols-3 gap-4'>
@@ -17,7 +45,7 @@ const Table = (props: Props) => {
             </button>
           </div>
           <table className='w-full'>
-            <thead className='bg-gray-50'>
+            {/* <thead className='bg-gray-50'>
               <tr>
                 <th className='text-left p-4'>Codigo</th>
                 <th className='text-left p-4'>Familia</th>
@@ -25,9 +53,9 @@ const Table = (props: Props) => {
                 <th className='text-left p-4'>Monto</th>
                 <th className='text-left p-4'>Estado</th>
               </tr>
-            </thead>
+            </thead> */}
             <tbody>
-              {pagos.map((pago) => {
+              {currentPagos.map((pago) => {
                 const familia = familias.find(
                   (familia) => familia.id === pago.familia_id
                 );
@@ -45,6 +73,13 @@ const Table = (props: Props) => {
               })}
             </tbody>
           </table>
+          <div className='p-4'>
+            <Pagination
+              currentPage={currentPagosPage}
+              totalPages={totalPagosPages}
+              onPageChange={setCurrentPagosPage}
+            />
+          </div>
         </div>
         <div className='bg-white rounded-lg shadow'>
           <div className='p-4 border-b flex justify-between items-center'>
@@ -54,35 +89,40 @@ const Table = (props: Props) => {
             </button>
           </div>
           <ul className='p-4'>
-            <li className='flex items-center justify-between mb-4'>
-              <div className='flex items-center'>
-                <img
-                  src='/api/placeholder/32/32'
-                  alt='Uchiha Itachi'
-                  className='w-8 h-8 rounded-full mr-3'
-                />
-                <div>
-                  <p className='font-semibold'>Uchiha Itachi</p>
-                  <p className='text-sm text-gray-500'>Jat nou</p>
-                </div>
-              </div>
-              <span className='text-sm text-gray-500'>INV-054-2856789</span>
-            </li>
-            <li className='flex items-center justify-between mb-4'>
-              <div className='flex items-center'>
-                <img
-                  src='/api/placeholder/32/32'
-                  alt='Haruno Sakura'
-                  className='w-8 h-8 rounded-full mr-3'
-                />
-                <div>
-                  <p className='font-semibold'>Haruno Sakura</p>
-                  <p className='text-sm text-gray-500'>15 minzas ago</p>
-                </div>
-              </div>
-              <span className='text-sm text-gray-500'>INV-024-3426789</span>
-            </li>
+            {currentNotificaciones.map((notificacion) => {
+              const familia = familias.find(
+                (familia) => familia.id === notificacion.familia_id
+              );
+
+              return (
+                <li
+                  className='flex items-center justify-between mb-4'
+                  key={notificacion.id}
+                >
+                  <div className='flex items-center'>
+                    <div>
+                      <p className='font-semibold'>
+                        {familia?.apellido_familia}
+                      </p>
+                      <p className='text-sm text-gray-500'>
+                        {formatDate(notificacion.fecha_envio)}
+                      </p>
+                    </div>
+                  </div>
+                  <span className='text-sm text-gray-500'>
+                    {notificacion.estado}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
+          <div className='p-1'>
+            <PaginationSmall
+              currentPage={currentNotificacionesPage}
+              totalPages={totalNotificacionesPages}
+              onPageChange={setCurrentNotificacionesPage}
+            />
+          </div>
         </div>
       </div>
     </div>

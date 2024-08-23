@@ -27,7 +27,7 @@ export const Users: React.FC = () => {
           <thead className='bg-gray-100'>
             <tr>
               <th className='py-2 px-4 border-b text-left'>ID</th>
-              <th className='py-2 px-4 border-b text-left'>Username</th>
+
               <th className='py-2 px-4 border-b text-left'>Email</th>
               <th className='py-2 px-4 border-b text-left'>Name</th>
               <th className='py-2 px-4 border-b text-left'>Role ID</th>
@@ -38,7 +38,7 @@ export const Users: React.FC = () => {
             {currentUsers.map((user) => (
               <tr key={user.id}>
                 <td className='py-2 px-4 border-b'>{user.id}</td>
-                <td className='py-2 px-4 border-b'>{user.username}</td>
+
                 <td className='py-2 px-4 border-b'>{user.email}</td>
                 <td className='py-2 px-4 border-b'>{`${user.nombre || ''} ${
                   user.apellido || ''

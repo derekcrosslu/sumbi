@@ -8,6 +8,7 @@ import { Facturas } from './pages/Facturas';
 import { Pagos } from './pages/Pagos';
 import { Notificaciones } from './pages/Notificaciones';
 import { Bloqueos } from './pages/Bloqueos';
+import ClientInfoTable from './pages/ClientInfoTable';
 import { useStore, generateMockData } from './store/store';
 
 function App() {
@@ -22,10 +23,7 @@ function App() {
     <BrowserRouter>
       <Refine>
         <Routes>
-          <Route
-            path='/'
-            element={<Layout />}
-          >
+          <Route element={<Layout />}>
             <Route
               index
               element={<Dashboard />}
@@ -49,6 +47,10 @@ function App() {
             <Route
               path='bloqueos'
               element={<Bloqueos />}
+            />
+            <Route
+              path='reportes'
+              element={<ClientInfoTable />}
             />
           </Route>
         </Routes>

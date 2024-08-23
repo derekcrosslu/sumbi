@@ -1,10 +1,11 @@
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useStore } from '../store/store';
-import { Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export const Header: React.FC = () => {
   const { importCSV, exportCSV } = useStore();
+  const navigate = useNavigate();
 
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -13,9 +14,9 @@ export const Header: React.FC = () => {
       reader.onload = (e) => {
         const content = e.target?.result as string;
         importCSV(content);
+        navigate('/reportes');
       };
       reader.readAsText(file);
-      Navigate({ to: '/reportes' });
     }
   };
 

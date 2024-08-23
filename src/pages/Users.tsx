@@ -1,8 +1,23 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useStore } from '../store/store';
+import Pagination from '../components/Pagination';
+
+const ITEMS_PER_PAGE = 5;
 
 export const Users: React.FC = () => {
   const { users } = useStore();
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.ceil(users.length / ITEMS_PER_PAGE);
+
+  const currentUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return users.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [users, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   return (
     <div className='flex flex-col w-full h-screen'>
@@ -20,19 +35,28 @@ export const Users: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
+            {currentUsers.map((user) => (
               <tr key={user.id}>
                 <td className='py-2 px-4 border-b'>{user.id}</td>
                 <td className='py-2 px-4 border-b'>{user.username}</td>
                 <td className='py-2 px-4 border-b'>{user.email}</td>
-                <td className='py-2 px-4 border-b'>{`${user.nombre || ''} ${user.apellido || ''}`}</td>
+                <td className='py-2 px-4 border-b'>{`${user.nombre || ''} ${
+                  user.apellido || ''
+                }`}</td>
                 <td className='py-2 px-4 border-b'>{user.role_id}</td>
-                <td className='py-2 px-4 border-b'>{user.is_active ? 'Yes' : 'No'}</td>
+                <td className='py-2 px-4 border-b'>
+                  {user.is_active ? 'Yes' : 'No'}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 };

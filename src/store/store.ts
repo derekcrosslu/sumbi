@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { faker } from '@faker-js/faker';
+import { faker, fakerES_MX } from '@faker-js/faker';
 import Papa from 'papaparse';
 
 // Interfaces
@@ -98,6 +98,8 @@ interface Familia {
   api_key?: string;
   ultima_actualizacion_api?: Date;
   user_id?: number;
+  escalas?: string;
+  estado?: string;
 }
 
 interface Hijo {
@@ -109,6 +111,7 @@ interface Hijo {
   genero?: string;
   nivel_educativo?: string;
   necesidades_especiales?: string;
+  escala?: string;
 }
 
 interface Pago {
@@ -117,6 +120,16 @@ interface Pago {
   monto: number;
   fecha_pago: Date;
   metodo_pago?: string;
+  estado?: string;
+}
+
+interface Factura {
+  id: number;
+  familia_id: number;
+  numero_factura: string;
+  monto: number;
+  fecha_factura: Date;
+  escala?: string;
   estado?: string;
 }
 
@@ -148,6 +161,7 @@ interface Store {
   familias: Familia[];
   hijos: Hijo[];
   pagos: Pago[];
+  facturas: Factura[];
   notificaciones: Notificacion[];
   bloqueos: Bloqueo[];
   menu: boolean;
@@ -157,6 +171,7 @@ interface Store {
   addFamilia: (familia: Familia) => void;
   addHijo: (hijo: Hijo) => void;
   addPago: (pago: Pago) => void;
+  addFactura: (factura: Factura) => void;
   addNotificacion: (notificacion: Notificacion) => void;
   addBloqueo: (bloqueo: Bloqueo) => void;
   setMenu: () => void;
@@ -174,6 +189,7 @@ interface Store {
   getBloqueoById: (id: number) => Bloqueo | undefined;
   importCSV: (csvContent: string) => void;
   exportCSV: () => void;
+  getEscalasByFamiliaId: (familiaId: number) => string | undefined;
 }
 
 // Create the store
@@ -185,6 +201,7 @@ export const useStore = create<Store>()(
       familias: [],
       hijos: [],
       pagos: [],
+      facturas: [],
       notificaciones: [],
       bloqueos: [],
       menu: false,
@@ -195,6 +212,8 @@ export const useStore = create<Store>()(
         set((state) => ({ familias: [...state.familias, familia] })),
       addHijo: (hijo) => set((state) => ({ hijos: [...state.hijos, hijo] })),
       addPago: (pago) => set((state) => ({ pagos: [...state.pagos, pago] })),
+      addFactura: (factura) =>
+        set((state) => ({ facturas: [...state.facturas, factura] })),
       addNotificacion: (notificacion) =>
         set((state) => ({
           notificaciones: [...state.notificaciones, notificacion],
@@ -211,8 +230,12 @@ export const useStore = create<Store>()(
           pagos: [],
           notificaciones: [],
           bloqueos: [],
+          facturas: [],
+          // importedData: [],
           menu: false,
         }),
+      getEscalasByFamiliaId: (familiaId: number) =>
+        get().familias.find((familia) => familia.id === familiaId)?.escalas,
       getUserById: (id) => get().users.find((user) => user.id === id),
       getRoleById: (id) => get().roles.find((role) => role.id === id),
       getFamiliaById: (id) =>
@@ -274,10 +297,6 @@ export const useStore = create<Store>()(
         set((state) => ({
           importedData: [...state.importedData, ...importedData],
         }));
-        // return set((state) => ({
-        //   importedData: [...state.importedData, ...importedData],
-        // })),
-        // set({ importedData: ImportedData });
       },
       exportCSV: () => {
         const familias = get().familias;
@@ -307,7 +326,7 @@ export const generateMockData = () => {
   const store = useStore.getState();
 
   // Generate roles
-  const roles = ['Admin', 'Parent', 'Teacher'];
+  const roles = ['Admin', 'Padre', 'Maestra'];
   roles.forEach((roleName, index) => {
     store.addRole({
       id: index + 1,
@@ -320,15 +339,15 @@ export const generateMockData = () => {
   for (let i = 0; i < 10; i++) {
     store.addUser({
       id: i + 1,
-      username: faker.internet.userName(),
-      email: faker.internet.email(),
-      password_hash: faker.internet.password(),
-      nombre: faker.person.firstName(),
-      apellido: faker.person.lastName(),
-      role_id: faker.number.int({ min: 1, max: 3 }),
-      is_active: faker.datatype.boolean(),
-      fecha_creacion: faker.date.past(),
-      ultima_actualizacion: faker.date.recent(),
+      username: fakerES_MX.internet.userName(),
+      email: fakerES_MX.internet.email(),
+      password_hash: fakerES_MX.internet.password(),
+      nombre: fakerES_MX.person.firstName(),
+      apellido: fakerES_MX.person.lastName(),
+      role_id: fakerES_MX.number.int({ min: 1, max: 3 }),
+      is_active: fakerES_MX.datatype.boolean(),
+      fecha_creacion: fakerES_MX.date.past(),
+      ultima_actualizacion: fakerES_MX.date.recent(),
     });
   }
 
@@ -336,64 +355,75 @@ export const generateMockData = () => {
   for (let i = 0; i < 10; i++) {
     store.addFamilia({
       id: i + 1,
-      apellido_familia: faker.person.lastName(),
-      codigo_cliente: faker.string.alphanumeric(8),
-      ruc: faker.string.numeric(11),
-      nombres_madre: faker.person.firstName('female'),
-      apellido_materno_madre: faker.person.lastName(),
-      apellido_paterno_madre: faker.person.lastName(),
-      tipo_identificacion_madre: faker.helpers.arrayElement([
+      apellido_familia: fakerES_MX.person.lastName(),
+      codigo_cliente: fakerES_MX.string.alphanumeric(8),
+      ruc: fakerES_MX.string.numeric(11),
+      nombres_madre: fakerES_MX.person.firstName('female'),
+      apellido_materno_madre: fakerES_MX.person.lastName(),
+      apellido_paterno_madre: fakerES_MX.person.lastName(),
+      tipo_identificacion_madre: fakerES_MX.helpers.arrayElement([
         'DNI',
         'Pasaporte',
         'Carnet de Extranjería',
       ]),
-      nro_identificacion_madre: faker.string.numeric(8),
-      direccion_madre: faker.location.streetAddress(),
-      correo_madre: faker.internet.email(),
-      telefono_madre: faker.phone.number(),
-      nombres_padre: faker.person.firstName('male'),
-      apellido_paterno_padre: faker.person.lastName(),
-      apellido_materno_padre: faker.person.lastName(),
-      tipo_identificacion_padre: faker.helpers.arrayElement([
+      nro_identificacion_madre: fakerES_MX.string.numeric(8),
+      direccion_madre: fakerES_MX.location.streetAddress(),
+      correo_madre: fakerES_MX.internet.email(),
+      telefono_madre: fakerES_MX.phone.number(),
+      nombres_padre: fakerES_MX.person.firstName('male'),
+      apellido_paterno_padre: fakerES_MX.person.lastName(),
+      apellido_materno_padre: fakerES_MX.person.lastName(),
+      tipo_identificacion_padre: fakerES_MX.helpers.arrayElement([
         'DNI',
         'Pasaporte',
         'Carnet de Extranjería',
       ]),
-      nro_identificacion_padre: faker.string.numeric(8),
-      direccion_padre: faker.location.streetAddress(),
-      correo_padre: faker.internet.email(),
-      telefono_padre: faker.phone.number(),
-      responsable_pago: faker.helpers.arrayElement(['Madre', 'Padre', 'Ambos']),
-      nombre_banco: faker.company.name(),
-      tipo_cuenta: faker.helpers.arrayElement(['Ahorros', 'Corriente']),
-      numero_cuenta: faker.finance.accountNumber(),
-      cuenta_recaudadora: faker.finance.accountNumber(),
-      oficina_recaudadora: faker.company.name(),
-      canal_entrada: faker.helpers.arrayElement(['Web', 'Móvil', 'Presencial']),
-      tipo_valor: faker.helpers.arrayElement([
+      nro_identificacion_padre: fakerES_MX.string.numeric(8),
+      direccion_padre: fakerES_MX.location.streetAddress(),
+      correo_padre: fakerES_MX.internet.email(),
+      telefono_padre: fakerES_MX.phone.number(),
+      responsable_pago: fakerES_MX.helpers.arrayElement([
+        'Madre',
+        'Padre',
+        'Ambos',
+      ]),
+      nombre_banco: fakerES_MX.company.name(),
+      tipo_cuenta: fakerES_MX.helpers.arrayElement(['Ahorros', 'Corriente']),
+      numero_cuenta: fakerES_MX.finance.accountNumber(),
+      cuenta_recaudadora: fakerES_MX.finance.accountNumber(),
+      oficina_recaudadora: fakerES_MX.company.name(),
+      canal_entrada: fakerES_MX.helpers.arrayElement([
+        'Web',
+        'Móvil',
+        'Presencial',
+      ]),
+      tipo_valor: fakerES_MX.helpers.arrayElement([
         'Efectivo',
         'Cheque',
         'Transferencia',
       ]),
-      ingresado_sistema_contable: faker.datatype.boolean(),
-      fecha_pago_preferencial: faker.date.future(),
-      fecha_vencimiento: faker.date.future(),
-      fecha_bloqueo: faker.date.future(),
+      ingresado_sistema_contable: fakerES_MX.datatype.boolean(),
+      fecha_pago_preferencial: fakerES_MX.date.future(),
+      fecha_vencimiento: fakerES_MX.date.future(),
+      fecha_bloqueo: fakerES_MX.date.future(),
       importe_max_cobrar: parseFloat(
-        faker.finance.amount({ min: 500, max: 5000, dec: 2 })
+        fakerES_MX.finance.amount({ min: 500, max: 5000, dec: 2 })
       ),
       importe_min_cobrar: parseFloat(
-        faker.finance.amount({ min: 100, max: 500, dec: 2 })
+        fakerES_MX.finance.amount({ min: 100, max: 500, dec: 2 })
       ),
-      credito: parseFloat(faker.finance.amount({ min: 0, max: 1000, dec: 2 })),
-      al_dia_con_pagos: faker.datatype.boolean(),
+      credito: parseFloat(
+        fakerES_MX.finance.amount({ min: 0, max: 1000, dec: 2 })
+      ),
+      al_dia_con_pagos: fakerES_MX.datatype.boolean(),
       deuda_total: parseFloat(
-        faker.finance.amount({ min: 0, max: 500, dec: 2 })
+        fakerES_MX.finance.amount({ min: 0, max: 500, dec: 2 })
       ),
-      nota: faker.lorem.sentence(),
-      api_key: faker.string.uuid(),
-      ultima_actualizacion_api: faker.date.recent(),
+      nota: fakerES_MX.lorem.sentence(),
+      api_key: fakerES_MX.string.uuid(),
+      ultima_actualizacion_api: fakerES_MX.date.recent(),
       user_id: i + 1,
+      escalas: fakerES_MX.helpers.arrayElement(['A', 'B', 'C', 'D', 'E']),
     });
   }
 
@@ -403,18 +433,19 @@ export const generateMockData = () => {
     store.addHijo({
       id: i + 1,
       familia_id: familiaId,
-      nombres: faker.person.firstName(),
-      apellidos: faker.person.lastName(),
-      fecha_nacimiento: faker.date.past({ years: 10 }),
-      genero: faker.helpers.arrayElement(['Male', 'Female', 'Other']),
-      nivel_educativo: faker.helpers.arrayElement([
+      nombres: fakerES_MX.person.firstName(),
+      apellidos: fakerES_MX.person.lastName(),
+      fecha_nacimiento: fakerES_MX.date.past({ years: 10 }),
+      genero: fakerES_MX.helpers.arrayElement(['Masculino', 'Femenino']),
+      nivel_educativo: fakerES_MX.helpers.arrayElement([
         'Preschool',
         'Elementary',
         'Middle School',
       ]),
-      necesidades_especiales: faker.datatype.boolean()
-        ? faker.lorem.sentence()
+      necesidades_especiales: fakerES_MX.datatype.boolean()
+        ? fakerES_MX.lorem.sentence()
         : undefined,
+      escala: fakerES_MX.helpers.arrayElement(['A', 'B', 'C', 'D', 'E']),
     });
   }
 
@@ -424,14 +455,42 @@ export const generateMockData = () => {
     store.addPago({
       id: i + 1,
       familia_id: familiaId,
-      monto: parseFloat(faker.finance.amount({ min: 100, max: 1000, dec: 2 })),
-      fecha_pago: faker.date.recent(),
-      metodo_pago: faker.helpers.arrayElement([
-        'Cash',
-        'Credit Card',
-        'Bank Transfer',
+      monto: parseFloat(
+        fakerES_MX.finance.amount({ min: 50, max: 500, dec: 2 })
+      ),
+      fecha_pago: fakerES_MX.date.recent(),
+      metodo_pago: fakerES_MX.helpers.arrayElement([
+        'EFFECTIVO',
+        'CARGO EN CUENTA',
+        'CHEQUE PROPIO BANCO',
+        'CHEQUE OTRO BANCO',
+        'TRANSFERENCIA',
+        'TARJETA DE CREDITO',
       ]),
-      estado: faker.helpers.arrayElement(['Completed', 'Pending', 'Failed']),
+      estado: fakerES_MX.helpers.arrayElement([
+        'Completado',
+        'Pendiente',
+        'Error',
+      ]),
+    });
+  }
+
+  // Generate facturas
+  for (let i = 0; i < 100; i++) {
+    const familiaId = (i % 10) + 1;
+    store.addFactura({
+      id: i + 1,
+      familia_id: familiaId,
+      numero_factura: faker.finance.accountNumber(5),
+      monto: parseFloat(
+        fakerES_MX.finance.amount({ min: 50, max: 500, dec: 2 })
+      ),
+      fecha_factura: fakerES_MX.date.recent(),
+      estado: fakerES_MX.helpers.arrayElement([
+        'Emitida',
+        'Pagada',
+        'Notificada',
+      ]),
     });
   }
 
@@ -441,21 +500,25 @@ export const generateMockData = () => {
     store.addNotificacion({
       id: i + 1,
       familia_id: familiaId,
-      user_id: faker.number.int({ min: 1, max: 10 }),
-      pago_id: faker.datatype.boolean()
-        ? faker.number.int({ min: 1, max: 100 })
+      user_id: fakerES_MX.number.int({ min: 1, max: 10 }),
+      pago_id: fakerES_MX.datatype.boolean()
+        ? fakerES_MX.number.int({ min: 1, max: 100 })
         : undefined,
-      bloqueo_id: faker.datatype.boolean()
-        ? faker.number.int({ min: 1, max: 5 })
+      bloqueo_id: fakerES_MX.datatype.boolean()
+        ? fakerES_MX.number.int({ min: 1, max: 5 })
         : undefined,
-      tipo_notificacion: faker.helpers.arrayElement([
-        'Payment',
-        'Reminder',
-        'Block',
+      tipo_notificacion: fakerES_MX.helpers.arrayElement([
+        'Pago',
+        'Notificacion',
+        'Bloqueo',
       ]),
-      contenido: faker.lorem.sentence(),
-      fecha_envio: faker.date.recent(),
-      estado: faker.helpers.arrayElement(['Sent', 'Delivered', 'Read']),
+      contenido: fakerES_MX.lorem.sentence(),
+      fecha_envio: fakerES_MX.date.recent(),
+      estado: fakerES_MX.helpers.arrayElement([
+        'Enviado',
+        'Entregado',
+        'Leido',
+      ]),
     });
   }
 
@@ -464,10 +527,16 @@ export const generateMockData = () => {
     store.addBloqueo({
       id: i + 1,
       familia_id: i * 2 + 1,
-      fecha_inicio: faker.date.past(),
-      fecha_fin: faker.datatype.boolean() ? faker.date.future() : undefined,
-      motivo: faker.lorem.sentence(),
-      estado: faker.helpers.arrayElement(['Active', 'Resolved', 'Pending']),
+      fecha_inicio: fakerES_MX.date.past(),
+      fecha_fin: fakerES_MX.datatype.boolean()
+        ? fakerES_MX.date.future()
+        : undefined,
+      motivo: fakerES_MX.lorem.sentence(),
+      estado: fakerES_MX.helpers.arrayElement([
+        'Activo',
+        'Resuelto',
+        'Pendiente',
+      ]),
     });
   }
 };

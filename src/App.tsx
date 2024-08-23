@@ -14,10 +14,10 @@ import { useStore, generateMockData } from './store/store';
 function App() {
   const { resetAllData } = useStore();
 
-  // useEffect(() => {
-  //   resetAllData();
-  //   generateMockData();
-  // }, []);
+  useEffect(() => {
+    // resetAllData();
+    generateMockData();
+  }, []);
 
   return (
     <BrowserRouter>

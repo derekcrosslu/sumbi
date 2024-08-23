@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useStore } from '../store/store';
+import { Navigate } from 'react-router-dom';
 
 export const Header: React.FC = () => {
   const { importCSV, exportCSV } = useStore();
@@ -14,6 +15,7 @@ export const Header: React.FC = () => {
         importCSV(content);
       };
       reader.readAsText(file);
+      Navigate({ to: '/reportes' });
     }
   };
 

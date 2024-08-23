@@ -1,9 +1,11 @@
 import React from 'react';
 import { MoreVertical } from 'lucide-react';
+import { useStore } from '../store/store';
 
 type Props = {};
 
 const Table = (props: Props) => {
+  const { familias, pagos } = useStore();
   return (
     <div>
       <div className='grid grid-cols-3 gap-4'>
@@ -17,25 +19,30 @@ const Table = (props: Props) => {
           <table className='w-full'>
             <thead className='bg-gray-50'>
               <tr>
-                <th className='text-left p-4'>Invoice ID</th>
-                <th className='text-left p-4'>Invoice Name</th>
-                <th className='text-left p-4'>Date</th>
-                <th className='text-left p-4'>Amount</th>
+                <th className='text-left p-4'>Codigo</th>
+                <th className='text-left p-4'>Familia</th>
+                <th className='text-left p-4'>Fecha</th>
+                <th className='text-left p-4'>Monto</th>
+                <th className='text-left p-4'>Estado</th>
               </tr>
             </thead>
             <tbody>
-              <tr className='border-t'>
-                <td className='p-4'>INV-012-3456789</td>
-                <td className='p-4'>Mailchimp support</td>
-                <td className='p-4'>2812-22</td>
-                <td className='p-4'>$320.00</td>
-              </tr>
-              <tr className='border-t'>
-                <td className='p-4'>INV-024-3456789</td>
-                <td className='p-4'>Cash withdrawl bank</td>
-                <td className='p-4'>2412-22</td>
-                <td className='p-4'>$249.00</td>
-              </tr>
+              {pagos.map((pago) => {
+                const familia = familias.find(
+                  (familia) => familia.id === pago.familia_id
+                );
+                return (
+                  <tr key={pago.id}>
+                    <td className='p-4'>{pago.id}</td>
+                    <td className='p-4'>{familia?.apellido_familia}</td>
+                    <td className='p-4'>
+                      {new Date(pago.fecha_pago).toLocaleDateString()}
+                    </td>
+                    <td className='p-4'>${pago.monto.toFixed(2)}</td>
+                    <td className='p-4'>{pago.estado}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

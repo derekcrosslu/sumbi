@@ -18,7 +18,7 @@ export default function Card({ title, amount, url }: CardProps) {
             <ArrowUpRight size={20} />
           </Link>
         </div>
-        <p className='text-2xl font-bold'>${amount}</p>
+        <p className='text-2xl font-bold'>S/.{amount.toFixed(2)}</p>
       </div>
     </div>
   );

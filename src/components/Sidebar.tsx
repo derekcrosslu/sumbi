@@ -22,6 +22,7 @@ import {
   SquareArrowRight,
   SquareArrowLeft,
   Power,
+  SquareActivity,
 } from 'lucide-react';
 
 import { useStore } from '../store/store';
@@ -37,9 +38,9 @@ export const Sidebar: React.FC = () => {
       url: '/',
     },
     { icon: <Users size={20} />, label: 'Familias', url: '/familias' },
-    { icon: <CreditCard size={20} />, label: 'Pagos', url: '/facturas' },
-
-    { icon: <Calendar size={20} />, label: 'Calendario', url: '/calendario' },
+    { icon: <CreditCard size={20} />, label: 'Facturas', url: '/facturas' },
+    { icon: <SquareActivity size={20} />, label: 'Pagos', url: '/pagos' },
+    // { icon: <Calendar size={20} />, label: 'Calendario', url: '/calendario' },
     {
       icon: <Bell size={20} />,
       label: 'Notificaciones',

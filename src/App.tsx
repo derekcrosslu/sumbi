@@ -18,7 +18,10 @@ function App() {
 
   useEffect(() => {
     // resetAllData();
-    // generateMockData();
+    generateMockData();
+    return () => {
+      resetAllData();
+    };
   }, []);
 
   return (

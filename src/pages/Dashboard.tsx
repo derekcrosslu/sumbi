@@ -1,5 +1,6 @@
 import React from 'react';
 import { useStore } from '../store/store';
+import { useEffect } from 'react';
 
 import Card from '../components/Card';
 import Chart from '../components/Chart';

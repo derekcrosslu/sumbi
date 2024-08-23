@@ -1,9 +1,9 @@
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
-import { useClientStore } from '../store/store';
+import { useStore } from '../store/store';
 
 export const Header: React.FC = () => {
-  const { importCSV, exportCSV } = useClientStore();
+  const { importCSV, exportCSV } = useStore();
 
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -38,10 +38,10 @@ export const Header: React.FC = () => {
             <label className='px-4 py-2 bg-blue-600 text-white rounded-md cursor-pointer'>
               + Importar
               <input
-                type="file"
-                accept=".csv"
+                type='file'
+                accept='.csv'
                 onChange={handleImport}
-                className="hidden"
+                className='hidden'
               />
             </label>
           </div>

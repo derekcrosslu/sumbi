@@ -1,8 +1,11 @@
 import React from 'react';
+import { useStore } from '../store/store';
 
 type Props = {};
 
 const ClientInfoTable = () => {
+  const { importedData } = useStore();
+  console.log('importedData table: ', importedData);
   const data = [
     {
       nombre: 'LIA GAVANCHO CHILINGANO',
@@ -54,9 +57,9 @@ const ClientInfoTable = () => {
             <th className='border p-2 whitespace-nowrap'>CONCEPTO</th>
             <th className='border p-2 whitespace-nowrap'>FECHA VENCIMIENTO</th>
             <th className='border p-2 whitespace-nowrap'>FECHA BLOQUEO</th>
-            <th className='border p-2 whitespace-nowrap'>
+            {/* <th className='border p-2 whitespace-nowrap'>
               PERIODOS FACTURADOS
-            </th>
+            </th> */}
             <th className='border p-2 whitespace-nowrap'>
               IMPORTE MAX A COBRAR DEUDA
             </th>
@@ -122,12 +125,15 @@ const ClientInfoTable = () => {
           </tr>
         </thead>
         <tbody>
-          {data.map((row, index) => (
+          {importedData.map((row, index) => (
             <tr
               key={index}
               className={index % 2 === 0 ? 'bg-gray-100' : 'bg-white'}
             >
-              <td className='border p-2 whitespace-nowrap'>{row.nombre}</td>
+              {/* <td className='border p-2 whitespace-nowrap'>{row.nombre}</td> */}
+              <td className='border p-2 whitespace-nowrap'>
+                {row.nombreCliente}
+              </td>
               <td className='border p-2 whitespace-nowrap'>{row.codigo}</td>
               <td className='border p-2 whitespace-nowrap text-blue-600'>
                 {row.concepto}
@@ -138,29 +144,77 @@ const ClientInfoTable = () => {
               <td className='border p-2 whitespace-nowrap'>
                 {row.fechaBloqueo}
               </td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'>{row.importeMax}</td>
-              <td className='border p-2 whitespace-nowrap'>{row.importeMin}</td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
-              <td className='border p-2 whitespace-nowrap'></td>
+
+              {/* <td className='border p-2 whitespace-nowrap'>
+                {row.periodosFacturados}
+              </td> */}
+              <td className='border p-2 whitespace-nowrap text-blue-600'>
+                {row.importeMaxCobrarDeuda}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.importeMinCobrarDeuda}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.informacionAdicional}
+              </td>
+
+              <td className='border p-2 whitespace-nowrap'>
+                {row.codSubConcepto01}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.valorSubConcepto01}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.codSubConcepto02}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.valorSubConcepto02}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.codSubConcepto03}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.valorSubConcepto03}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.codSubConcepto04}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.valorSubConcepto04}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.codSubConcepto05}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.valorSubConcepto05}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.codSubConcepto06}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.valorSubConcepto06}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.codSubConcepto07}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.valorSubConcepto07}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.codSubConcepto08}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.valorSubConcepto08}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.numeroCtaCliente}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.tipoIdentificacion}
+              </td>
+              <td className='border p-2 whitespace-nowrap'>
+                {row.nroIdentificacion}
+              </td>
             </tr>
           ))}
         </tbody>

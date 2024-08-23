@@ -1,8 +1,42 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { faker } from '@faker-js/faker';
+import Papa from 'papaparse';
 
 // Interfaces
+
+interface ImportedData {
+  id: number;
+  nombreCliente?: string;
+  codigo?: string;
+  concepto?: string;
+  fechaVencimiento?: string;
+  fechaBloqueo?: string;
+  periodosFacturados?: string;
+  importeMaxCobrarDeuda?: string;
+  importeMinCobrarDeuda?: string;
+  informacionAdicional?: string;
+  codSubConcepto01?: string;
+  valorSubConcepto01?: string;
+  codSubConcepto02?: string;
+  valorSubConcepto02?: string;
+  codSubConcepto03?: string;
+  valorSubConcepto03?: string;
+  codSubConcepto04?: string;
+  valorSubConcepto04?: string;
+  codSubConcepto05?: string;
+  valorSubConcepto05?: string;
+  codSubConcepto06?: string;
+  valorSubConcepto06?: string;
+  codSubConcepto07?: string;
+  valorSubConcepto07?: string;
+  codSubConcepto08?: string;
+  valorSubConcepto08?: string;
+  numeroCtaCliente?: string;
+  tipoIdentificacion?: string;
+  nroIdentificacion?: string;
+}
+
 interface Role {
   id: number;
   nombre: string;
@@ -117,6 +151,7 @@ interface Store {
   notificaciones: Notificacion[];
   bloqueos: Bloqueo[];
   menu: boolean;
+  importedData: ImportedData[]; // Add importedData property
   addRole: (role: Role) => void;
   addUser: (user: User) => void;
   addFamilia: (familia: Familia) => void;
@@ -137,6 +172,8 @@ interface Store {
   getNotificacionesByUserId: (userId: number) => Notificacion[];
   getPagoById: (id: number) => Pago | undefined;
   getBloqueoById: (id: number) => Bloqueo | undefined;
+  importCSV: (csvContent: string) => void;
+  exportCSV: () => void;
 }
 
 // Create the store
@@ -151,26 +188,112 @@ export const useStore = create<Store>()(
       notificaciones: [],
       bloqueos: [],
       menu: false,
+      importedData: [], // Add importedData property
       addRole: (role) => set((state) => ({ roles: [...state.roles, role] })),
       addUser: (user) => set((state) => ({ users: [...state.users, user] })),
-      addFamilia: (familia) => set((state) => ({ familias: [...state.familias, familia] })),
+      addFamilia: (familia) =>
+        set((state) => ({ familias: [...state.familias, familia] })),
       addHijo: (hijo) => set((state) => ({ hijos: [...state.hijos, hijo] })),
       addPago: (pago) => set((state) => ({ pagos: [...state.pagos, pago] })),
-      addNotificacion: (notificacion) => set((state) => ({ notificaciones: [...state.notificaciones, notificacion] })),
-      addBloqueo: (bloqueo) => set((state) => ({ bloqueos: [...state.bloqueos, bloqueo] })),
+      addNotificacion: (notificacion) =>
+        set((state) => ({
+          notificaciones: [...state.notificaciones, notificacion],
+        })),
+      addBloqueo: (bloqueo) =>
+        set((state) => ({ bloqueos: [...state.bloqueos, bloqueo] })),
       setMenu: () => set((state) => ({ menu: !state.menu })),
-      resetAllData: () => set({ roles: [], users: [], familias: [], hijos: [], pagos: [], notificaciones: [], bloqueos: [], menu: false }),
+      resetAllData: () =>
+        set({
+          roles: [],
+          users: [],
+          familias: [],
+          hijos: [],
+          pagos: [],
+          notificaciones: [],
+          bloqueos: [],
+          menu: false,
+        }),
       getUserById: (id) => get().users.find((user) => user.id === id),
       getRoleById: (id) => get().roles.find((role) => role.id === id),
-      getFamiliaById: (id) => get().familias.find((familia) => familia.id === id),
-      getHijosByFamiliaId: (familiaId) => get().hijos.filter((hijo) => hijo.familia_id === familiaId),
-      getPagosByFamiliaId: (familiaId) => get().pagos.filter((pago) => pago.familia_id === familiaId),
-      getNotificacionesByFamiliaId: (familiaId) => get().notificaciones.filter((notificacion) => notificacion.familia_id === familiaId),
-      getBloqueosByFamiliaId: (familiaId) => get().bloqueos.filter((bloqueo) => bloqueo.familia_id === familiaId),
-      getUserFamilias: (userId) => get().familias.filter((familia) => familia.user_id === userId),
-      getNotificacionesByUserId: (userId) => get().notificaciones.filter((notificacion) => notificacion.user_id === userId),
+      getFamiliaById: (id) =>
+        get().familias.find((familia) => familia.id === id),
+      getHijosByFamiliaId: (familiaId) =>
+        get().hijos.filter((hijo) => hijo.familia_id === familiaId),
+      getPagosByFamiliaId: (familiaId) =>
+        get().pagos.filter((pago) => pago.familia_id === familiaId),
+      getNotificacionesByFamiliaId: (familiaId) =>
+        get().notificaciones.filter(
+          (notificacion) => notificacion.familia_id === familiaId
+        ),
+      getBloqueosByFamiliaId: (familiaId) =>
+        get().bloqueos.filter((bloqueo) => bloqueo.familia_id === familiaId),
+      getUserFamilias: (userId) =>
+        get().familias.filter((familia) => familia.user_id === userId),
+      getNotificacionesByUserId: (userId) =>
+        get().notificaciones.filter(
+          (notificacion) => notificacion.user_id === userId
+        ),
       getPagoById: (id) => get().pagos.find((pago) => pago.id === id),
-      getBloqueoById: (id) => get().bloqueos.find((bloqueo) => bloqueo.id === id),
+      getBloqueoById: (id) =>
+        get().bloqueos.find((bloqueo) => bloqueo.id === id),
+      importCSV: (csvContent: string) => {
+        const result = Papa.parse(csvContent, { header: true });
+        const importedData: ImportedData[] = result.data.map(
+          (row: any, index: number) => ({
+            id: index + 1,
+            nombreCliente: row['NOMBRE CLIENTE (30)'] || '',
+            codigo: row['CODIGO'] || '',
+            concepto: row['CONCEPTO'] || '',
+            fechaVencimiento: row['FECHA VENCIMIENTO'] || '',
+            fechaBloqueo: row['FECHA BLOQUEO'] || '',
+            periodosFacturados: row['PERIODOS FACTURADOS'] || '',
+            importeMaxCobrarDeuda: row['IMPORTE MAX A COBRAR DEUDA'] || '',
+            importeMinCobrarDeuda: row['IMPORTE MIN A COBRAR DEUDA'] || '',
+            informacionAdicional: row['INFORMACION ADICIONAL'] || '',
+            codSubConcepto01: row['COD. SUB CONCEPTO 01'] || '',
+            valorSubConcepto01: row['VALOR SUB CONCEPTO 01'] || '',
+            codSubConcepto02: row['COD. SUB CONCEPTO 02'] || '',
+            valorSubConcepto02: row['VALOR SUB CONCEPTO 02'] || '',
+            codSubConcepto03: row['COD. SUB CONCEPTO 03'] || '',
+            valorSubConcepto03: row['VALOR SUB CONCEPTO 03'] || '',
+            codSubConcepto04: row['COD. SUB CONCEPTO 04'] || '',
+            valorSubConcepto04: row['VALOR SUB CONCEPTO 04'] || '',
+            codSubConcepto05: row['COD. SUB CONCEPTO 05'] || '',
+            valorSubConcepto05: row['VALOR SUB CONCEPTO 05'] || '',
+            codSubConcepto06: row['COD. SUB CONCEPTO 06'] || '',
+            valorSubConcepto06: row['VALOR SUB CONCEPTO 06'] || '',
+            codSubConcepto07: row['COD. SUB CONCEPTO 07'] || '',
+            valorSubConcepto07: row['VALOR SUB CONCEPTO 07'] || '',
+            codSubConcepto08: row['COD. SUB CONCEPTO 08'] || '',
+            valorSubConcepto08: row['VALOR SUB CONCEPTO 08'] || '',
+            numeroCtaCliente: row['NUMERO CTA.CLIENTE'] || '',
+            tipoIdentificacion: row['TIPO IDENTIFICACION'] || '',
+            nroIdentificacion: row['NRO IDENTIFICACION'] || '',
+          })
+        );
+        set((state) => ({
+          importedData: [...state.importedData, ...importedData],
+        }));
+        // return set((state) => ({
+        //   importedData: [...state.importedData, ...importedData],
+        // })),
+        // set({ importedData: ImportedData });
+      },
+      exportCSV: () => {
+        const familias = get().familias;
+        const csv = Papa.unparse(familias);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+          const url = URL.createObjectURL(blob);
+          link.setAttribute('href', url);
+          link.setAttribute('download', 'familias_export.csv');
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      },
     }),
     {
       name: 'sumbi-store',
@@ -219,7 +342,11 @@ export const generateMockData = () => {
       nombres_madre: faker.person.firstName('female'),
       apellido_materno_madre: faker.person.lastName(),
       apellido_paterno_madre: faker.person.lastName(),
-      tipo_identificacion_madre: faker.helpers.arrayElement(['DNI', 'Pasaporte', 'Carnet de Extranjería']),
+      tipo_identificacion_madre: faker.helpers.arrayElement([
+        'DNI',
+        'Pasaporte',
+        'Carnet de Extranjería',
+      ]),
       nro_identificacion_madre: faker.string.numeric(8),
       direccion_madre: faker.location.streetAddress(),
       correo_madre: faker.internet.email(),
@@ -227,7 +354,11 @@ export const generateMockData = () => {
       nombres_padre: faker.person.firstName('male'),
       apellido_paterno_padre: faker.person.lastName(),
       apellido_materno_padre: faker.person.lastName(),
-      tipo_identificacion_padre: faker.helpers.arrayElement(['DNI', 'Pasaporte', 'Carnet de Extranjería']),
+      tipo_identificacion_padre: faker.helpers.arrayElement([
+        'DNI',
+        'Pasaporte',
+        'Carnet de Extranjería',
+      ]),
       nro_identificacion_padre: faker.string.numeric(8),
       direccion_padre: faker.location.streetAddress(),
       correo_padre: faker.internet.email(),
@@ -239,16 +370,26 @@ export const generateMockData = () => {
       cuenta_recaudadora: faker.finance.accountNumber(),
       oficina_recaudadora: faker.company.name(),
       canal_entrada: faker.helpers.arrayElement(['Web', 'Móvil', 'Presencial']),
-      tipo_valor: faker.helpers.arrayElement(['Efectivo', 'Cheque', 'Transferencia']),
+      tipo_valor: faker.helpers.arrayElement([
+        'Efectivo',
+        'Cheque',
+        'Transferencia',
+      ]),
       ingresado_sistema_contable: faker.datatype.boolean(),
       fecha_pago_preferencial: faker.date.future(),
       fecha_vencimiento: faker.date.future(),
       fecha_bloqueo: faker.date.future(),
-      importe_max_cobrar: parseFloat(faker.finance.amount({ min: 500, max: 5000, dec: 2 })),
-      importe_min_cobrar: parseFloat(faker.finance.amount({ min: 100, max: 500, dec: 2 })),
+      importe_max_cobrar: parseFloat(
+        faker.finance.amount({ min: 500, max: 5000, dec: 2 })
+      ),
+      importe_min_cobrar: parseFloat(
+        faker.finance.amount({ min: 100, max: 500, dec: 2 })
+      ),
       credito: parseFloat(faker.finance.amount({ min: 0, max: 1000, dec: 2 })),
       al_dia_con_pagos: faker.datatype.boolean(),
-      deuda_total: parseFloat(faker.finance.amount({ min: 0, max: 500, dec: 2 })),
+      deuda_total: parseFloat(
+        faker.finance.amount({ min: 0, max: 500, dec: 2 })
+      ),
       nota: faker.lorem.sentence(),
       api_key: faker.string.uuid(),
       ultima_actualizacion_api: faker.date.recent(),
@@ -266,8 +407,14 @@ export const generateMockData = () => {
       apellidos: faker.person.lastName(),
       fecha_nacimiento: faker.date.past({ years: 10 }),
       genero: faker.helpers.arrayElement(['Male', 'Female', 'Other']),
-      nivel_educativo: faker.helpers.arrayElement(['Preschool', 'Elementary', 'Middle School']),
-      necesidades_especiales: faker.datatype.boolean() ? faker.lorem.sentence() : undefined,
+      nivel_educativo: faker.helpers.arrayElement([
+        'Preschool',
+        'Elementary',
+        'Middle School',
+      ]),
+      necesidades_especiales: faker.datatype.boolean()
+        ? faker.lorem.sentence()
+        : undefined,
     });
   }
 
@@ -279,7 +426,11 @@ export const generateMockData = () => {
       familia_id: familiaId,
       monto: parseFloat(faker.finance.amount({ min: 100, max: 1000, dec: 2 })),
       fecha_pago: faker.date.recent(),
-      metodo_pago: faker.helpers.arrayElement(['Cash', 'Credit Card', 'Bank Transfer']),
+      metodo_pago: faker.helpers.arrayElement([
+        'Cash',
+        'Credit Card',
+        'Bank Transfer',
+      ]),
       estado: faker.helpers.arrayElement(['Completed', 'Pending', 'Failed']),
     });
   }
@@ -291,9 +442,17 @@ export const generateMockData = () => {
       id: i + 1,
       familia_id: familiaId,
       user_id: faker.number.int({ min: 1, max: 10 }),
-      pago_id: faker.datatype.boolean() ? faker.number.int({ min: 1, max: 100 }) : undefined,
-      bloqueo_id: faker.datatype.boolean() ? faker.number.int({ min: 1, max: 5 }) : undefined,
-      tipo_notificacion: faker.helpers.arrayElement(['Payment', 'Reminder', 'Block']),
+      pago_id: faker.datatype.boolean()
+        ? faker.number.int({ min: 1, max: 100 })
+        : undefined,
+      bloqueo_id: faker.datatype.boolean()
+        ? faker.number.int({ min: 1, max: 5 })
+        : undefined,
+      tipo_notificacion: faker.helpers.arrayElement([
+        'Payment',
+        'Reminder',
+        'Block',
+      ]),
       contenido: faker.lorem.sentence(),
       fecha_envio: faker.date.recent(),
       estado: faker.helpers.arrayElement(['Sent', 'Delivered', 'Read']),
